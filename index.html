@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora de Balanceamento Químico</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg-dark: #0a0a0f; --bg-card: #151520;
+            --accent-c: #ff6b6b; --accent-h: #4ecdc4; --accent-o: #45b7d1;
+            --accent-n: #96ceb4; --accent-s: #feca57; --accent-na: #ff9ff3;
+            --accent-k: #54a0ff; --accent-mn: #5f27cd; --accent-cr: #00d2d3;
+            --accent-fe: #ff9f43; --accent-cu: #b33939; --accent-zn: #7bed9f;
+            --accent-cl: #2ed573; --accent-br: #e1b12c; --accent-i: #8c7ae6;
+            --accent-hg: #718093; --accent-pb: #487eb0; --accent-co: #e84118;
+            --accent-as: #9c88ff; --accent-ca: #f8b500; --accent-mg: #00b894;
+            --accent-al: #a29bfe; --accent-p: #fd79a8; --accent-ag: #dfe6e9;
+            --accent-ba: #81ecec; --accent-plus: #2ecc71; --accent-arrow: #e74c3c;
+            --text-light: #f5f6fa; --text-muted: #7f8fa6;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-dark); color: var(--text-light); min-height: 100vh; overflow-x: hidden; }
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
+        .header { text-align: center; padding: 20px 0; }
+        .logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .logo-icon { width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .logo-text { font-size: 1.3rem; font-weight: bold; background: linear-gradient(90deg, #667eea, #764ba2, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .equation-display { background: var(--bg-card); border-radius: 20px; margin-bottom: 15px; min-height: 62px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #2d3436; position: sticky; top: 2px; z-index: 20; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+        .equation-display-inner { overflow: auto; cursor: grab; width: 100%; min-height: 56px; display: flex; flex-direction: column; justify-content: center; align-items: center; -webkit-overflow-scrolling: touch; user-select: none; }
+        .equation-display-inner.dragging { cursor: grabbing; scroll-behavior: auto; }
+        .equation-display.balanced { border-color: #2ecc71; animation: glow 1.5s ease-in-out infinite alternate; }
+        @keyframes glow { from { box-shadow: 0 0 10px #2ecc71; } to { box-shadow: 0 0 25px #2ecc71, 0 0 40px #2ecc71; } }
+        .equation-text { font-size: 1.4rem; font-weight: bold; text-align: center; word-wrap: break-word; line-height: 1.8; transition: font-size 0.15s ease-out; width: max-content; min-width: 100%; }
+        .equation-text .coefficient { color: #2ecc71; font-size: 1.1em; margin-right: 2px; }
+        .equation-text .element-C { color: var(--accent-c); }
+        .equation-text .element-H { color: var(--accent-h); }
+        .equation-text .element-O { color: var(--accent-o); }
+        .equation-text .element-N { color: var(--accent-n); }
+        .equation-text .element-S { color: var(--accent-s); }
+        .equation-text .element-Na { color: var(--accent-na); }
+        .equation-text .element-K { color: var(--accent-k); }
+        .equation-text .element-Mn { color: var(--accent-mn); }
+        .equation-text .element-Cr { color: var(--accent-cr); }
+        .equation-text .element-Fe { color: var(--accent-fe); }
+        .equation-text .element-Cu { color: var(--accent-cu); }
+        .equation-text .element-Zn { color: var(--accent-zn); }
+        .equation-text .element-Cl { color: var(--accent-cl); }
+        .equation-text .element-Br { color: var(--accent-br); }
+        .equation-text .element-I { color: var(--accent-i); }
+        .equation-text .element-Hg { color: var(--accent-hg); }
+        .equation-text .element-Pb { color: var(--accent-pb); }
+        .equation-text .element-Co { color: var(--accent-co); }
+        .equation-text .element-As { color: var(--accent-as); }
+        .equation-text .element-Bi { color: #fd79a8; }
+        .equation-text .element-Ca { color: var(--accent-ca); }
+        .equation-text .element-Mg { color: var(--accent-mg); }
+        .equation-text .element-Al { color: var(--accent-al); }
+        .equation-text .element-P { color: var(--accent-p); }
+        .equation-text .element-Ag { color: var(--accent-ag); }
+        .equation-text .element-Ba { color: var(--accent-ba); }
+        .equation-text .element-Si { color: #a0a0a0; }
+        .equation-text .element-Ti { color: #74b9ff; }
+        .equation-text .element-Ni { color: #55a3ff; }
+        .equation-text .element-Sn { color: #b2bec3; }
+        .equation-text .arrow { color: var(--accent-arrow); margin: 0 8px; font-size: 1.3em; }
+        .equation-text .plus { color: var(--accent-plus); margin: 0 2px; }
+        .equation-text .charge { color: #f39c12; font-size: 0.8em; vertical-align: super; }
+        .placeholder-text { color: var(--text-muted); font-size: 1rem; }
+        .status-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .status-item { display: flex; align-items: center; gap: 5px; padding: 8px 15px; background: var(--bg-card); border-radius: 20px; font-size: 0.85rem; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #e74c3c; }
+        .status-dot.active { background: #2ecc71; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .action-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .btn { padding: 15px 12px; border: none; border-radius: 15px; font-size: 0.9rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-secondary { background: #2d3436; color: var(--text-light); }
+        .btn-success { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
+        .btn-info { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; }
+        .btn:active { transform: scale(0.95); }
+        .tabs { display: flex; gap: 5px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { padding: 8px 12px; border: none; border-radius: 10px; background: #2d3436; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
+        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .keyboard-section { background: var(--bg-card); border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+        .keyboard-title { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .element-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .element-grid.hidden { display: none; }
+        .element-btn { aspect-ratio: 1; border: none; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #000; position: relative; overflow: hidden; }
+        .element-btn::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%); }
+        .element-btn:active { transform: scale(0.9); }
+        .element-btn .atomic-num { font-size: 0.55rem; opacity: 0.9; color: #000; }
+        .element-btn .symbol { font-size: 1.1rem; color: #000; }
+        .el-C{background:var(--accent-c)}.el-H{background:var(--accent-h)}.el-O{background:var(--accent-o)}.el-N{background:var(--accent-n)}.el-S{background:var(--accent-s)}.el-Na{background:var(--accent-na)}.el-K{background:var(--accent-k)}.el-Mn{background:var(--accent-mn)}.el-Cr{background:var(--accent-cr)}.el-Fe{background:var(--accent-fe)}.el-Cu{background:var(--accent-cu)}.el-Zn{background:var(--accent-zn)}.el-Cl{background:var(--accent-cl)}.el-Br{background:var(--accent-br)}.el-I{background:var(--accent-i)}.el-Hg{background:var(--accent-hg)}.el-Pb{background:var(--accent-pb)}.el-Co{background:var(--accent-co)}.el-As{background:var(--accent-as)}.el-Bi{background:#fd79a8}.el-Ca{background:var(--accent-ca)}.el-Mg{background:var(--accent-mg)}.el-Al{background:var(--accent-al)}.el-P{background:var(--accent-p)}.el-Ag{background:var(--accent-ag)}.el-Ba{background:var(--accent-ba)}.el-Si{background:#a0a0a0}.el-Ti{background:#74b9ff}.el-Ni{background:#55a3ff}.el-Sn{background:#b2bec3}
+        .ops-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+        .op-btn { padding: 15px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; background: #353b48; color: white; }
+        .op-btn:active { transform: scale(0.95); }
+        .op-btn.arrow-btn { background: var(--accent-arrow); grid-column: span 2; }
+        .op-btn.plus-btn { background: var(--accent-plus); }
+        .op-btn.num-btn { background: #487eb0; }
+        .op-btn.charge-btn { background: #8e44ad; }
+        .op-btn.paren-btn { background: #16a085; }
+        .op-btn.clear-btn { background: #c0392b; }
+        .op-btn.back-btn { background: #d35400; }
+        .examples-section { background: var(--bg-card); border-radius: 20px; padding: 15px; }
+        .examples-title { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px; }
+        .examples-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .example-btn { padding: 12px; border: 2px solid #2d3436; border-radius: 12px; background: transparent; color: var(--text-light); font-size: 0.75rem; cursor: pointer; transition: all 0.3s ease; text-align: center; line-height: 1.4; }
+        .example-btn:hover, .example-btn:active { border-color: #667eea; background: rgba(102, 126, 234, 0.1); }
+        .balancing-animation { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 1000; }
+        .balancing-animation.active { display: flex; }
+        .scale-left, .scale-right { position: absolute; width: 14px; height: 14px; border-radius: 50%; top: 42%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; animation: balance 1s ease-in-out infinite; }
+        .scale-left { left: 32%; background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .scale-right { right: 32%; background: linear-gradient(135deg, #3498db, #2980b9); animation-delay: 0.5s; }
+        @keyframes balance { 0%, 100% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.1); } }
+        .balance-text { margin-top: 30px; font-size: 1.5rem; color: #2ecc71; animation: fadeInOut 1s infinite; }
+        @keyframes fadeInOut { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .result-section { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 20px; padding: 20px; margin-top: 15px; display: none; }
+        .result-section.show { display: block; animation: slideUp 0.5s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-title { text-align: center; color: #fff; font-size: 1.1rem; margin-bottom: 15px; }
+        .result-equation { background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; font-size: 1.2rem; text-align: center; line-height: 2; }
+        .result-equation .coef { color: #2ecc71; font-weight: bold; font-size: 1.3em; }
+        .result-equation .arrow { color: #e74c3c; margin: 0 2px; font-weight: bold; font-size: 1.6em; }
+        .copy-btn { display: block; margin: 15px auto 0; padding: 10px 20px; border: none; border-radius: 10px; background: rgba(255,255,255,0.2); color: white; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; }
+        .copy-btn:hover { background: rgba(255,255,255,0.3); }
+        .color-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #2d3436; }
+        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
+        .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #2d3436; color: white; padding: 15px 25px; border-radius: 10px; font-size: 0.9rem; opacity: 0; transition: all 0.3s ease; z-index: 1001; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.error { background: #c0392b; }
+        .toast.success { background: #27ae60; }
+        .history-section { background: var(--bg-card); border-radius: 20px; padding: 15px; margin-top: 15px; margin-bottom: 15px; display: none; }
+        .history-section.show { display: block; }
+        .history-title { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px; }
+        .history-list { max-height: 200px; overflow-y: auto; }
+        .history-item { padding: 10px; border-bottom: 1px solid #2d3436; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
+        .history-item:hover { background: rgba(102, 126, 234, 0.1); }
+        .history-item:last-child { border-bottom: none; }
+        @media (max-width: 380px) { .element-grid { grid-template-columns: repeat(4, 1fr); } .equation-text { font-size: 1.1rem; } .examples-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div class="logo">
+            <div class="logo-text">Balança Química</div>
+        </div>
+    </header>
+    <div class="status-bar">
+        <div class="status-item">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Não balanceada</span>
+        </div>
+    </div>
+    <div class="equation-display" id="equationDisplay">
+        <div class="equation-display-inner" id="equationDisplayInner">
+            <div class="placeholder-text" id="placeholder">Toque nos elementos para montar a equação</div>
+            <div class="equation-text" id="equationText"></div>
+        </div>
+    </div>
+    <div class="action-buttons">
+        <button class="btn btn-success" onclick="balanceEquation()">⚖️ Balancear</button>
+        <button class="btn btn-danger" onclick="clearEquation()">🗑️ Limpar</button>
+        <button class="btn btn-info" onclick="toggleHistory()">📜 Histórico</button>
+    </div>
+    <div class="result-section" id="resultSection">
+        <div class="result-title">✅ Equação Balanceada!</div>
+        <div class="result-equation" id="resultEquation"></div>
+        <button class="copy-btn" onclick="copyResult()">📋 Copiar Resultado</button>
+    </div>
+    <div class="history-section" id="historySection">
+        <div class="history-title">📜 Histórico de Equações</div>
+        <div class="history-list" id="historyList"></div>
+    </div>
+    <div class="keyboard-section">
+        <div class="keyboard-title">🧪 Elementos Químicos</div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showCategory('common',this)">Comuns</button>
+            <button class="tab-btn" onclick="showCategory('metals',this)">Metais</button>
+            <button class="tab-btn" onclick="showCategory('nonmetals',this)">Não-Metais</button>
+            <button class="tab-btn" onclick="showCategory('transition',this)">Transição</button>
+        </div>
+        <div class="element-grid" id="common">
+            <button class="element-btn el-C" onclick="addElement('C')"><span class="atomic-num">6</span><span class="symbol">C</span></button>
+            <button class="element-btn el-H" onclick="addElement('H')"><span class="atomic-num">1</span><span class="symbol">H</span></button>
+            <button class="element-btn el-O" onclick="addElement('O')"><span class="atomic-num">8</span><span class="symbol">O</span></button>
+            <button class="element-btn el-N" onclick="addElement('N')"><span class="atomic-num">7</span><span class="symbol">N</span></button>
+            <button class="element-btn el-S" onclick="addElement('S')"><span class="atomic-num">16</span><span class="symbol">S</span></button>
+            <button class="element-btn el-Cl" onclick="addElement('Cl')"><span class="atomic-num">17</span><span class="symbol">Cl</span></button>
+            <button class="element-btn el-Na" onclick="addElement('Na')"><span class="atomic-num">11</span><span class="symbol">Na</span></button>
+            <button class="element-btn el-K" onclick="addElement('K')"><span class="atomic-num">19</span><span class="symbol">K</span></button>
+            <button class="element-btn el-Ca" onclick="addElement('Ca')"><span class="atomic-num">20</span><span class="symbol">Ca</span></button>
+            <button class="element-btn el-Fe" onclick="addElement('Fe')"><span class="atomic-num">26</span><span class="symbol">Fe</span></button>
+        </div>
+        <div class="element-grid hidden" id="metals">
+            <button class="element-btn el-Na" onclick="addElement('Na')"><span class="atomic-num">11</span><span class="symbol">Na</span></button>
+            <button class="element-btn el-K" onclick="addElement('K')"><span class="atomic-num">19</span><span class="symbol">K</span></button>
+            <button class="element-btn el-Ca" onclick="addElement('Ca')"><span class="atomic-num">20</span><span class="symbol">Ca</span></button>
+            <button class="element-btn el-Mg" onclick="addElement('Mg')"><span class="atomic-num">12</span><span class="symbol">Mg</span></button>
+            <button class="element-btn el-Al" onclick="addElement('Al')"><span class="atomic-num">13</span><span class="symbol">Al</span></button>
+            <button class="element-btn el-Zn" onclick="addElement('Zn')"><span class="atomic-num">30</span><span class="symbol">Zn</span></button>
+            <button class="element-btn el-Ag" onclick="addElement('Ag')"><span class="atomic-num">47</span><span class="symbol">Ag</span></button>
+            <button class="element-btn el-Ba" onclick="addElement('Ba')"><span class="atomic-num">56</span><span class="symbol">Ba</span></button>
+            <button class="element-btn el-Pb" onclick="addElement('Pb')"><span class="atomic-num">82</span><span class="symbol">Pb</span></button>
+            <button class="element-btn el-Sn" onclick="addElement('Sn')"><span class="atomic-num">50</span><span class="symbol">Sn</span></button>
+        </div>
+        <div class="element-grid hidden" id="nonmetals">
+            <button class="element-btn el-C" onclick="addElement('C')"><span class="atomic-num">6</span><span class="symbol">C</span></button>
+            <button class="element-btn el-H" onclick="addElement('H')"><span class="atomic-num">1</span><span class="symbol">H</span></button>
+            <button class="element-btn el-O" onclick="addElement('O')"><span class="atomic-num">8</span><span class="symbol">O</span></button>
+            <button class="element-btn el-N" onclick="addElement('N')"><span class="atomic-num">7</span><span class="symbol">N</span></button>
+            <button class="element-btn el-S" onclick="addElement('S')"><span class="atomic-num">16</span><span class="symbol">S</span></button>
+            <button class="element-btn el-P" onclick="addElement('P')"><span class="atomic-num">15</span><span class="symbol">P</span></button>
+            <button class="element-btn el-Cl" onclick="addElement('Cl')"><span class="atomic-num">17</span><span class="symbol">Cl</span></button>
+            <button class="element-btn el-Br" onclick="addElement('Br')"><span class="atomic-num">35</span><span class="symbol">Br</span></button>
+            <button class="element-btn el-I" onclick="addElement('I')"><span class="atomic-num">53</span><span class="symbol">I</span></button>
+            <button class="element-btn el-Si" onclick="addElement('Si')"><span class="atomic-num">14</span><span class="symbol">Si</span></button>
+        </div>
+        <div class="element-grid hidden" id="transition">
+            <button class="element-btn el-Fe" onclick="addElement('Fe')"><span class="atomic-num">26</span><span class="symbol">Fe</span></button>
+            <button class="element-btn el-Cu" onclick="addElement('Cu')"><span class="atomic-num">29</span><span class="symbol">Cu</span></button>
+            <button class="element-btn el-Zn" onclick="addElement('Zn')"><span class="atomic-num">30</span><span class="symbol">Zn</span></button>
+            <button class="element-btn el-Mn" onclick="addElement('Mn')"><span class="atomic-num">25</span><span class="symbol">Mn</span></button>
+            <button class="element-btn el-Cr" onclick="addElement('Cr')"><span class="atomic-num">24</span><span class="symbol">Cr</span></button>
+            <button class="element-btn el-Co" onclick="addElement('Co')"><span class="atomic-num">27</span><span class="symbol">Co</span></button>
+            <button class="element-btn el-Ni" onclick="addElement('Ni')"><span class="atomic-num">28</span><span class="symbol">Ni</span></button>
+            <button class="element-btn el-Hg" onclick="addElement('Hg')"><span class="atomic-num">80</span><span class="symbol">Hg</span></button>
+            <button class="element-btn el-Ti" onclick="addElement('Ti')"><span class="atomic-num">22</span><span class="symbol">Ti</span></button>
+            <button class="element-btn el-Ag" onclick="addElement('Ag')"><span class="atomic-num">47</span><span class="symbol">Ag</span></button>
+        </div>
+        <div class="ops-grid">
+            <button class="op-btn num-btn" onclick="addNumber('2')">2</button>
+            <button class="op-btn num-btn" onclick="addNumber('3')">3</button>
+            <button class="op-btn num-btn" onclick="addNumber('4')">4</button>
+            <button class="op-btn num-btn" onclick="addNumber('5')">5</button>
+            <button class="op-btn num-btn" onclick="addNumber('6')">6</button>
+            <button class="op-btn num-btn" onclick="addNumber('7')">7</button>
+            <button class="op-btn num-btn" onclick="addNumber('8')">8</button>
+            <button class="op-btn num-btn" onclick="addNumber('9')">9</button>
+            <button class="op-btn plus-btn" onclick="addPlus()">+</button>
+            <button class="op-btn arrow-btn" onclick="addArrow()">→</button>
+            <button class="op-btn charge-btn" onclick="addSuperscript('¹')">¹</button>
+            <button class="op-btn charge-btn" onclick="addSuperscript('²')">²</button>
+            <button class="op-btn charge-btn" onclick="addSuperscript('³')">³</button>
+            <button class="op-btn charge-btn" onclick="addSuperscript('⁴')">⁴</button>
+            <button class="op-btn charge-btn" onclick="addSuperscript('⁵')">⁵</button>
+            <button class="op-btn charge-btn" onclick="addSuperscript('⁶')">⁶</button>
+            <button class="op-btn charge-btn" onclick="addCharge('⁺')">⁺</button>
+            <button class="op-btn charge-btn" onclick="addCharge('⁻')">⁻</button>
+            <button class="op-btn paren-btn" onclick="addParen('(')">(</button>
+            <button class="op-btn paren-btn" onclick="addParen(')')">)</button>
+            <button class="op-btn back-btn" onclick="backspace()">⌫</button>
+            <button class="op-btn clear-btn" onclick="clearEquation()">✕</button>
+        </div>
+    </div>
+    <div class="examples-section">
+        <div class="examples-title">📋 Exemplos Rápidos (Toque para usar)</div>
+        <div class="examples-grid">
+            <button class="example-btn" onclick="loadExample('H2+O2→H2O')">H₂ + O₂ → H₂O</button>
+            <button class="example-btn" onclick="loadExample('CH4+O2→CO2+H2O')">CH₄ + O₂ → CO₂ + H₂O</button>
+            <button class="example-btn" onclick="loadExample('Fe+O2→Fe2O3')">Fe + O₂ → Fe₂O₃</button>
+            <button class="example-btn" onclick="loadExample('NaOH+HCl→NaCl+H2O')">NaOH + HCl → NaCl + H₂O</button>
+            <button class="example-btn" onclick="loadExample('C+HNO3→CO2+NO2+H2O')">C + HNO₃ → CO₂ + NO₂ + H₂O</button>
+            <button class="example-btn" onclick="loadExample('Cu+HNO3→Cu(NO3)2+NO+H2O')">Cu + HNO₃ → Cu(NO₃)₂ + NO + H₂O</button>
+            <button class="example-btn" onclick="loadExample('Al+O2→Al2O3')">Al + O₂ → Al₂O₃</button>
+            <button class="example-btn" onclick="loadExample('CaCO3→CaO+CO2')">CaCO₃ → CaO + CO₂</button>
+            <button class="example-btn" onclick="loadExample('MnO4⁻+Fe²⁺+H⁺→Mn²⁺+Fe³⁺+H2O')">MnO₄⁻ + Fe²⁺ + H⁺ → Mn²⁺ + Fe³⁺ + H₂O</button>
+            <button class="example-btn" onclick="loadExample('Cr2O7²⁻+Fe²⁺+H⁺→Cr³⁺+Fe³⁺+H2O')">Cr₂O₇²⁻ + Fe²⁺ + H⁺ → Cr³⁺ + Fe³⁺ + H₂O</button>
+        </div>
+    </div>
+    <div class="color-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-c)"></div>C</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-h)"></div>H</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-o)"></div>O</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-n)"></div>N</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-s)"></div>S</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-na)"></div>Na</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-k)"></div>K</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-ca)"></div>Ca</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-fe)"></div>Fe</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cl)"></div>Cl</div>
+    </div>
+</div>
+
+<div class="balancing-animation" id="balancingAnimation">
+    <div style="position:relative;width:150px;height:150px">
+        <div class="scale-left">⚗️</div>
+        <div style="text-align:center;font-size:4rem;margin-top:20px">⚖️</div>
+        <div class="scale-right">🧪</div>
+    </div>
+    <div class="balance-text">Balanceando...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+    let equation = '';
+    let isBalanced = false;
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem('equationHistory') || '[]'); } catch(e) { history = []; }
+    let lastBalancedResult = '';
+
+    const twoLetterElements = ['Na','Mg','Al','Si','Cl','Ca','Ti','Cr','Mn','Fe','Co','Ni','Cu','Zn','As','Br','Ag','Sn','Ba','Hg','Pb','Bi'];
+    const oneLetterElements = ['H','C','N','O','P','S','K','I'];
+    const elementColors = {
+        'C':'element-C','H':'element-H','O':'element-O','N':'element-N','S':'element-S',
+        'Na':'element-Na','K':'element-K','Mn':'element-Mn','Cr':'element-Cr','Fe':'element-Fe',
+        'Cu':'element-Cu','Zn':'element-Zn','Cl':'element-Cl','Br':'element-Br','I':'element-I',
+        'Hg':'element-Hg','Pb':'element-Pb','Co':'element-Co','As':'element-As','Bi':'element-Bi',
+        'Ca':'element-Ca','Mg':'element-Mg','Al':'element-Al','P':'element-P','Ag':'element-Ag',
+        'Ba':'element-Ba','Si':'element-Si','Ti':'element-Ti','Ni':'element-Ni','Sn':'element-Sn'
+    };
+
+    // =========================================================
+    // ARITMÉTICA RACIONAL
+    // =========================================================
+    function gcd(a, b) {
+        a = Math.abs(Math.floor(a)); b = Math.abs(Math.floor(b));
+        while (b) { const t = b; b = a % b; a = t; } return a;
+    }
+    function lcm(a, b) { return (a === 0 || b === 0) ? 0 : Math.abs(a * b) / gcd(a, b); }
+    function R(n, d) {
+        if (d === 0) return {n:0, d:1};
+        if (d < 0) { n=-n; d=-d; }
+        const g = gcd(Math.abs(n), Math.abs(d));
+        return {n: n/g, d: d/g};
+    }
+    const radd = (a,b) => R(a.n*b.d + b.n*a.d, a.d*b.d);
+    const rsub = (a,b) => R(a.n*b.d - b.n*a.d, a.d*b.d);
+    const rmul = (a,b) => R(a.n*b.n, a.d*b.d);
+    const rdiv = (a,b) => R(a.n*b.d, a.d*b.n);
+    const rneg = a => R(-a.n, a.d);
+    const rzero = () => R(0,1);
+    const rone  = () => R(1,1);
+
+    // =========================================================
+    // PARSER DE FÓRMULA QUÍMICA
+    // =========================================================
+    function normalizeFormula(f) {
+        const sub = {'\u2080':'0','\u2081':'1','\u2082':'2','\u2083':'3','\u2084':'4',
+                     '\u2085':'5','\u2086':'6','\u2087':'7','\u2088':'8','\u2089':'9'};
+        return f.replace(/[\u2080-\u2089]/g, c => sub[c] || c);
+    }
+
+    function countAtoms(formula) {
+        if (!formula || typeof formula !== 'string') return {};
+        formula = normalizeFormula(formula);
+        // Remove ionic charge characters before parsing
+        formula = formula.replace(/[⁺⁻¹²³⁴⁵⁶⁷⁸⁹]/g, '');
+        const stack = [{}];
+        let i = 0;
+        while (i < formula.length) {
+            const ch = formula[i];
+            if (ch === '(') { stack.push({}); i++; continue; }
+            if (ch === ')') {
+                const top = stack.pop();
+                i++;
+                let mult = '';
+                while (i < formula.length && /[0-9]/.test(formula[i])) { mult += formula[i]; i++; }
+                const m = mult ? parseInt(mult) : 1;
+                const cur = stack[stack.length-1];
+                for (const el in top) cur[el] = (cur[el]||0) + top[el]*m;
+                continue;
+            }
+            if (/[A-Z]/.test(ch)) {
+                let el = ch; i++;
+                while (i < formula.length && /[a-z]/.test(formula[i])) { el += formula[i]; i++; }
+                let cnt = '';
+                while (i < formula.length && /[0-9]/.test(formula[i])) { cnt += formula[i]; i++; }
+                const n = cnt ? parseInt(cnt) : 1;
+                const cur = stack[stack.length-1];
+                cur[el] = (cur[el]||0) + n;
+                continue;
+            }
+            i++;
+        }
+        return stack[0];
+    }
+
+    function getCharge(compound) {
+        if (!compound || typeof compound !== 'string') return 0;
+        const supNum = {'¹':1,'²':2,'³':3,'⁴':4,'⁵':5,'⁶':6,'⁷':7,'⁸':8,'⁹':9};
+        let charge = 0;
+        let i = 0;
+        while (i < compound.length) {
+            const ch = compound[i];
+            if (supNum[ch]) {
+                let num = 0;
+                while (i < compound.length && supNum[compound[i]]) { num = num*10 + supNum[compound[i]]; i++; }
+                if (i < compound.length) {
+                    if (compound[i] === '⁺') { charge = num; i++; }
+                    else if (compound[i] === '⁻') { charge = -num; i++; }
+                }
+            } else if (ch === '⁺') { charge = 1; i++; }
+            else if (ch === '⁻') { charge = -1; i++; }
+            else { i++; }
+        }
+        return charge;
+    }
+
+    // =========================================================
+    // PARSER DE EQUAÇÃO
+    // =========================================================
+    function parseEquation(eq) {
+        if (!eq || typeof eq !== 'string') return null;
+        const sides = eq.split('→');
+        if (sides.length !== 2) return null;
+        const split = s => s.split('+').map(x => x.trim()).filter(x => x.length > 0);
+        const originalLeft  = split(sides[0]);
+        const originalRight = split(sides[1]);
+        if (!originalLeft.length || !originalRight.length) return null;
+        // Versão limpa (sem cargas iônicas) para contagem de átomos
+        const clean = s => s.replace(/[⁺⁻¹²³⁴⁵⁶⁷⁸⁹]/g, '');
+        const left  = originalLeft.map(clean);
+        const right = originalRight.map(clean);
+        return { left, right, originalLeft, originalRight };
+    }
+
+    // =========================================================
+    // NÚCLEO DO BALANCEAMENTO — ESPAÇO NULO VIA RREF
+    // =========================================================
+    /**
+     * Monta a matriz estequiométrica M (linhas = elementos [+ carga], colunas = compostos).
+     * Reagentes têm coeficiente positivo, produtos negativo.
+     * Busca o espaço nulo de M; a solução (1 variável livre) dá os coeficientes.
+     */
+    function findNullVector(M, n) {
+        const m = M.length;
+        // Cópia racional
+        const A = M.map(row => row.map(x => R(x, 1)));
+        const pivotCols = [];
+        let pivotRow = 0;
+
+        for (let col = 0; col < n && pivotRow < m; col++) {
+            // Encontrar pivô não-zero
+            let best = -1;
+            for (let r = pivotRow; r < m; r++) {
+                if (A[r][col].n !== 0) { best = r; break; }
+            }
+            if (best === -1) continue; // coluna toda zero: variável livre
+
+            // Trocar linhas
+            [A[pivotRow], A[best]] = [A[best], A[pivotRow]];
+
+            // Normalizar linha pivô
+            const piv = A[pivotRow][col];
+            for (let j = 0; j < n; j++) A[pivotRow][j] = rdiv(A[pivotRow][j], piv);
+
+            // Eliminar coluna em todas as outras linhas
+            for (let r = 0; r < m; r++) {
+                if (r === pivotRow || A[r][col].n === 0) continue;
+                const f = rneg(A[r][col]);
+                for (let j = 0; j < n; j++) A[r][j] = radd(A[r][j], rmul(f, A[pivotRow][j]));
+            }
+
+            pivotCols.push({ col, row: pivotRow });
+            pivotRow++;
+        }
+
+        // Variáveis livres
+        const pivotColSet = new Set(pivotCols.map(p => p.col));
+        const freeCols = [];
+        for (let c = 0; c < n; c++) if (!pivotColSet.has(c)) freeCols.push(c);
+
+        if (freeCols.length !== 1) return null; // Precisa exatamente 1 variável livre
+
+        const freeCol = freeCols[0];
+        const sol = new Array(n).fill(null).map(() => rzero());
+        sol[freeCol] = rone();
+
+        // Back-substitution
+        for (const { col, row } of pivotCols) {
+            sol[col] = rneg(A[row][freeCol]);
+        }
+        return sol;
+    }
+
+    function rationalToPositiveIntegers(vec) {
+        if (!vec || !vec.length) return null;
+        // Verificar se todos têm mesmo sinal
+        const nonzero = vec.filter(r => r.n !== 0);
+        if (!nonzero.length) return null;
+        const sign = nonzero[0].n > 0 ? 1 : -1;
+        // Calcular LCD dos denominadores
+        const scale = vec.reduce((acc, r) => lcm(acc, r.d), 1);
+        const nums = vec.map(r => sign * r.n * (scale / r.d));
+        if (nums.some(x => x <= 0)) return null;
+        const g = nums.reduce((a, b) => gcd(a, b), 0);
+        if (!g) return null;
+        return nums.map(x => Math.round(x / g));
+    }
+
+    function balanceChemicalEquation(parsed) {
+        try {
+            const { left, right, originalLeft, originalRight } = parsed;
+            if (!left || !right) return null;
+            const n = left.length + right.length;
+            if (n < 2) return null;
+
+            // Coletar todos os elementos
+            const elementSet = new Set();
+            [...left, ...right].forEach(c => Object.keys(countAtoms(c)).forEach(e => elementSet.add(e)));
+            const elements = [...elementSet];
+            if (!elements.length) return null;
+
+            // Verificar se há cargas iônicas
+            const hasCharges = [...originalLeft, ...originalRight].some(c => getCharge(c) !== 0);
+
+            // Montar matriz M (linhas: elementos + carga opcional; colunas: compostos)
+            // Reagentes: +, Produtos: −
+            const M = [];
+            for (const elem of elements) {
+                const row = [];
+                for (const c of left)  row.push( countAtoms(c)[elem] || 0);
+                for (const c of right) row.push(-(countAtoms(c)[elem] || 0));
+                M.push(row);
+            }
+            if (hasCharges) {
+                const row = [];
+                for (const c of originalLeft)  row.push( getCharge(c));
+                for (const c of originalRight) row.push(-getCharge(c));
+                M.push(row);
+            }
+
+            // Buscar vetor do espaço nulo
+            const sol = findNullVector(M, n);
+            if (sol) {
+                const ints = rationalToPositiveIntegers(sol);
+                if (ints && ints.length === n && ints.every(x => Number.isInteger(x) && x > 0)) {
+                    return ints;
+                }
+            }
+
+            // Fallback: busca por força bruta (para equações simples)
+            return bruteForceBalance(parsed, elements, hasCharges);
+        } catch(e) {
+            console.error('balanceChemicalEquation:', e);
+            return null;
+        }
+    }
+
+    function bruteForceBalance(parsed, elements, hasCharges) {
+        try {
+            const { left, right, originalLeft, originalRight } = parsed;
+            const n = left.length + right.length;
+            const maxC = n <= 4 ? 20 : n <= 6 ? 15 : 10;
+
+            function check(coeffs) {
+                for (const elem of elements) {
+                    let L = 0, Rr = 0;
+                    for (let i = 0; i < left.length;  i++) L  += coeffs[i] * (countAtoms(left[i])[elem]  || 0);
+                    for (let i = 0; i < right.length; i++) Rr += coeffs[left.length+i] * (countAtoms(right[i])[elem] || 0);
+                    if (L !== Rr) return false;
+                }
+                if (hasCharges) {
+                    let Lc = 0, Rc = 0;
+                    for (let i = 0; i < originalLeft.length;  i++) Lc += coeffs[i] * getCharge(originalLeft[i]);
+                    for (let i = 0; i < originalRight.length; i++) Rc += coeffs[originalLeft.length+i] * getCharge(originalRight[i]);
+                    if (Lc !== Rc) return false;
+                }
+                return true;
+            }
+
+            const coeffs = new Array(n).fill(1);
+            function search(idx) {
+                if (idx === n) return check(coeffs) ? coeffs.slice() : null;
+                for (let c = 1; c <= maxC; c++) {
+                    coeffs[idx] = c;
+                    const r = search(idx+1);
+                    if (r) return r;
+                }
+                return null;
+            }
+            const sol = search(0);
+            if (!sol) return null;
+            const g = sol.reduce((a,b) => gcd(a,b));
+            return sol.map(x => x/g);
+        } catch(e) {
+            console.error('bruteForceBalance:', e);
+            return null;
+        }
+    }
+
+    // =========================================================
+    // UI E DISPLAY
+    // =========================================================
+    function showCategory(category, el) {
+        document.querySelectorAll('.element-grid').forEach(g => g.classList.add('hidden'));
+        document.getElementById(category).classList.remove('hidden');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        if (el) el.classList.add('active');
+    }
+
+    function addElement(e) { equation += e; updateDisplay(); vibrate(); }
+    function addNumber(n)  { equation += n; updateDisplay(); vibrate(); }
+    function addPlus()     { equation += '+'; updateDisplay(); vibrate(); }
+    function addArrow()    { equation += '→'; updateDisplay(); vibrate(); }
+    function addCharge(c)  { equation += c; updateDisplay(); vibrate(); }
+    function addSuperscript(s) { equation += s; updateDisplay(); vibrate(); }
+    function addParen(p)   { equation += p; updateDisplay(); vibrate(); }
+
+    function backspace() {
+        if (!equation.length) return;
+        if (equation.length >= 2 && twoLetterElements.includes(equation.slice(-2))) {
+            equation = equation.slice(0,-2);
+        } else {
+            equation = equation.slice(0,-1);
+        }
+        updateDisplay(); vibrate();
+    }
+
+    function clearEquation() {
+        equation = ''; isBalanced = false; lastBalancedResult = '';
+        updateDisplay();
+        document.getElementById('resultSection').classList.remove('show');
+        document.getElementById('equationDisplay').classList.remove('balanced');
+        updateStatus(); vibrate();
+    }
+
+    function loadExample(eq) {
+        equation = eq; isBalanced = false;
+        document.getElementById('resultSection').classList.remove('show');
+        document.getElementById('equationDisplay').classList.remove('balanced');
+        updateDisplay(); updateStatus(); vibrate();
+    }
+
+    function vibrate() { if (navigator.vibrate) navigator.vibrate(30); }
+
+    function adjustEquationFontSize() {
+        const inner = document.getElementById('equationDisplayInner');
+        const eqText = document.getElementById('equationText');
+        if (!inner || !eqText || !eqText.textContent.trim()) { eqText.style.fontSize=''; return; }
+        let rem = 1.4;
+        eqText.style.fontSize = rem + 'rem';
+        const maxW = inner.clientWidth - 6;
+        while (rem > 1.05 && eqText.scrollWidth > maxW) {
+            rem = Math.max(1.05, rem - 0.1);
+            eqText.style.fontSize = rem + 'rem';
+        }
+    }
+
+    const superscriptChars = new Set(['¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹','⁺','⁻']);
+
+    function formatEquation(eq) {
+        let out = '', i = 0;
+        while (i < eq.length) {
+            const two = eq.substring(i, i+2);
+            const one = eq[i];
+            if (twoLetterElements.includes(two) && elementColors[two]) {
+                out += `<span class="${elementColors[two]}">${two}</span>`; i += 2;
+            } else if (oneLetterElements.includes(one) && elementColors[one]) {
+                out += `<span class="${elementColors[one]}">${one}</span>`; i++;
+            } else if (one === '→') {
+                out += `<span class="arrow">→</span>`; i++;
+            } else if (one === '+') {
+                out += `<span class="plus">+</span>`; i++;
+            } else if (/[0-9]/.test(one)) {
+                let num = '';
+                while (i < eq.length && /[0-9]/.test(eq[i])) { num += eq[i]; i++; }
+                out += `<sub>${num}</sub>`;
+            } else if (superscriptChars.has(one)) {
+                let sup = '';
+                while (i < eq.length && superscriptChars.has(eq[i])) { sup += eq[i]; i++; }
+                out += `<span class="charge"><sup>${sup}</sup></span>`;
+            } else {
+                out += one; i++;
+            }
+        }
+        return out;
+    }
+
+    function formatCompound(compound) {
+        let out = '', i = 0;
+        while (i < compound.length) {
+            const two = compound.substring(i, i+2);
+            const one = compound[i];
+            if (twoLetterElements.includes(two) && elementColors[two]) {
+                out += `<span class="${elementColors[two]}">${two}</span>`; i += 2;
+            } else if (oneLetterElements.includes(one) && elementColors[one]) {
+                out += `<span class="${elementColors[one]}">${one}</span>`; i++;
+            } else if (/[0-9]/.test(one)) {
+                let num = '';
+                while (i < compound.length && /[0-9]/.test(compound[i])) { num += compound[i]; i++; }
+                out += `<sub>${num}</sub>`;
+            } else if (superscriptChars.has(one)) {
+                let sup = '';
+                while (i < compound.length && superscriptChars.has(compound[i])) { sup += compound[i]; i++; }
+                out += `<span class="charge"><sup>${sup}</sup></span>`;
+            } else {
+                out += one; i++;
+            }
+        }
+        return out;
+    }
+
+    function updateDisplay() {
+        const placeholder = document.getElementById('placeholder');
+        const eqText = document.getElementById('equationText');
+        if (!equation) {
+            placeholder.style.display = 'block';
+            eqText.innerHTML = '';
+            eqText.style.fontSize = '';
+        } else {
+            placeholder.style.display = 'none';
+            eqText.innerHTML = formatEquation(equation);
+            requestAnimationFrame(adjustEquationFontSize);
+        }
+    }
+
+    function updateStatus() {
+        const dot = document.getElementById('statusDot');
+        const txt = document.getElementById('statusText');
+        if (isBalanced) { dot.classList.add('active'); txt.textContent = 'Balanceada!'; }
+        else { dot.classList.remove('active'); txt.textContent = 'Não balanceada'; }
+    }
+
+    function showToast(msg, type='') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show ' + type;
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function balanceEquation() {
+        if (!equation.includes('→')) { showToast('⚠️ Adicione uma equação com →', 'error'); return; }
+        document.getElementById('balancingAnimation').classList.add('active');
+        setTimeout(() => {
+            try {
+                const parsed = parseEquation(equation);
+                document.getElementById('balancingAnimation').classList.remove('active');
+                if (!parsed) { showToast('❌ Formato inválido', 'error'); return; }
+                const coeffs = balanceChemicalEquation(parsed);
+                if (coeffs) {
+                    displayBalancedEquation(parsed, coeffs);
+                    isBalanced = true; updateStatus();
+                    document.getElementById('equationDisplay').classList.add('balanced');
+                    showToast('✅ Equação balanceada!', 'success');
+                    saveToHistory(equation);
+                } else {
+                    showToast('❌ Não foi possível balancear. Verifique a equação.', 'error');
+                }
+            } catch(e) {
+                document.getElementById('balancingAnimation').classList.remove('active');
+                console.error(e);
+                showToast('❌ Erro ao balancear', 'error');
+            }
+        }, 400);
+    }
+
+    function displayBalancedEquation(parsed, coeffs) {
+        const { left, originalLeft, originalRight } = parsed;
+        let html = '', text = '';
+        originalLeft.forEach((compound, i) => {
+            if (i > 0) { html += '<span class="plus"> + </span>'; text += ' + '; }
+            const c = coeffs[i];
+            if (c > 1) { html += `<span class="coef">${c}</span>`; text += c; }
+            html += formatCompound(compound); text += compound;
+        });
+        html += '<span class="arrow"> → </span>'; text += ' → ';
+        originalRight.forEach((compound, i) => {
+            if (i > 0) { html += '<span class="plus"> + </span>'; text += ' + '; }
+            const c = coeffs[left.length + i];
+            if (c > 1) { html += `<span class="coef">${c}</span>`; text += c; }
+            html += formatCompound(compound); text += compound;
+        });
+        lastBalancedResult = text;
+        document.getElementById('resultEquation').innerHTML = html;
+        document.getElementById('resultSection').classList.add('show');
+    }
+
+    function saveToHistory(eq) {
+        if (!lastBalancedResult) return;
+        const entry = { original: eq, balanced: lastBalancedResult, timestamp: new Date().toISOString() };
+        if (!history.some(h => h.original === eq)) {
+            history.unshift(entry);
+            if (history.length > 20) history.pop();
+            try { localStorage.setItem('equationHistory', JSON.stringify(history)); } catch(e){}
+            updateHistoryDisplay();
+        }
+    }
+
+    function toggleHistory() {
+        document.getElementById('historySection').classList.toggle('show');
+        updateHistoryDisplay();
+    }
+
+    function updateHistoryDisplay() {
+        const list = document.getElementById('historyList');
+        if (!history.length) { list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">Nenhuma equação no histórico</div>'; return; }
+        list.innerHTML = history.map((e, i) => `
+            <div class="history-item" onclick="loadFromHistory(${i})">
+                <div style="color:var(--text-muted);font-size:0.7rem;margin-bottom:5px">${new Date(e.timestamp).toLocaleString('pt-BR')}</div>
+                <div>${e.balanced || e.original}</div>
+            </div>`).join('');
+    }
+
+    function loadFromHistory(i) {
+        equation = history[i].original;
+        updateDisplay();
+        document.getElementById('historySection').classList.remove('show');
+    }
+
+    function copyResult() {
+        if (!lastBalancedResult) return;
+        navigator.clipboard.writeText(lastBalancedResult)
+            .then(() => showToast('📋 Copiado!', 'success'))
+            .catch(() => showToast('❌ Erro ao copiar', 'error'));
+    }
+
+    function initDrag() {
+        const inner = document.getElementById('equationDisplayInner');
+        let dragging = false, startX, startY, scrollLeft, scrollTop;
+        const getPos = e => e.touches ? {x: e.touches[0].clientX, y: e.touches[0].clientY} : {x: e.clientX, y: e.clientY};
+        inner.addEventListener('mousedown', e => { dragging=true; inner.classList.add('dragging'); const p=getPos(e); startX=p.x; startY=p.y; scrollLeft=inner.scrollLeft; scrollTop=inner.scrollTop; e.preventDefault(); });
+        inner.addEventListener('touchstart', e => { dragging=true; inner.classList.add('dragging'); const p=getPos(e); startX=p.x; startY=p.y; scrollLeft=inner.scrollLeft; scrollTop=inner.scrollTop; }, {passive:true});
+        const move = e => { if (!dragging) return; const p=getPos(e); inner.scrollLeft=Math.max(0,scrollLeft+(p.x-startX)); inner.scrollTop=Math.max(0,scrollTop+(p.y-startY)); };
+        const end  = () => { dragging=false; inner.classList.remove('dragging'); };
+        window.addEventListener('mousemove', move);
+        window.addEventListener('touchmove', move, {passive:true});
+        window.addEventListener('mouseup', end);
+        window.addEventListener('touchend', end);
+        window.addEventListener('touchcancel', end);
+    }
+
+    updateDisplay();
+    updateHistoryDisplay();
+    initDrag();
+    window.addEventListener('resize', () => requestAnimationFrame(adjustEquationFontSize));
+</script>
+</body>
+</html>
