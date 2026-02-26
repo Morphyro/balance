@@ -19,19 +19,21 @@
             --accent-ba: #81ecec; --accent-plus: #2ecc71; --accent-arrow: #e74c3c;
             --text-light: #f5f6fa; --text-muted: #7f8fa6;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-dark); color: var(--text-light); min-height: 100vh; overflow-x: hidden; }
-        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-dark); color: var(--text-light); min-height: 100vh; min-width: 380px; overflow-x: auto; }
+        .container { min-width: 380px; max-width: 500px; width: 100%; margin: 0 auto; padding: 15px; }
         .header { text-align: center; padding: 20px 0; }
         .logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .logo-icon { width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        .logo-text { font-size: 1.3rem; font-weight: bold; background: linear-gradient(90deg, #667eea, #764ba2, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .equation-display { background: var(--bg-card); border-radius: 20px; margin-bottom: 15px; min-height: 62px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #2d3436; position: sticky; top: 2px; z-index: 20; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
-        .equation-display-inner { overflow: auto; cursor: grab; width: 100%; min-height: 56px; display: flex; flex-direction: column; justify-content: center; align-items: center; -webkit-overflow-scrolling: touch; user-select: none; }
+        .logo-text { font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 2px; }
+        .logo-text .logo-gradient { background: linear-gradient(90deg, #667eea, #764ba2, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .logo-text .logo-emoji { -webkit-text-fill-color: unset; background: none; }
+        .equation-display { background: var(--bg-card); border-radius: 20px; margin-bottom: 15px; min-height: 90px; display: flex; flex-direction: column; justify-content: center; align-items: stretch; border: 2px solid #2d3436; position: sticky; top: 2px; z-index: 20; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+        .equation-display-inner { overflow-x: auto; overflow-y: hidden; cursor: grab; width: 100%; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; -webkit-overflow-scrolling: touch; user-select: none; padding: 8px 12px; }
         .equation-display-inner.dragging { cursor: grabbing; scroll-behavior: auto; }
-        .equation-display.balanced { border-color: #2ecc71; animation: glow 1.5s ease-in-out infinite alternate; }
+        .equation-display.balanced { }
         @keyframes glow { from { box-shadow: 0 0 10px #2ecc71; } to { box-shadow: 0 0 25px #2ecc71, 0 0 40px #2ecc71; } }
-        .equation-text { font-size: 1.4rem; font-weight: bold; text-align: center; word-wrap: break-word; line-height: 1.8; transition: font-size 0.15s ease-out; width: max-content; min-width: 100%; }
+        .equation-text { font-size: 2.4rem; font-weight: bold; text-align: left; line-height: 1.8; transition: font-size 0.15s ease-out; width: max-content; min-width: min(100%, max-content); flex-shrink: 0; white-space: nowrap; }
         .equation-text .coefficient { color: #2ecc71; font-size: 1.1em; margin-right: 2px; }
         .equation-text .element-C { color: var(--accent-c); }
         .equation-text .element-H { color: var(--accent-h); }
@@ -65,7 +67,8 @@
         .equation-text .element-Sn { color: #b2bec3; }
         .equation-text .arrow { color: var(--accent-arrow); margin: 0 8px; font-size: 1.3em; }
         .equation-text .plus { color: var(--accent-plus); margin: 0 2px; }
-        .equation-text .charge { color: #f39c12; font-size: 0.8em; vertical-align: super; }
+        .equation-text .charge { color: #f39c12; font-size: 0.8em; vertical-align: 0em; }
+        .equation-text .charge sup { font-size: 1.2em; margin-top: -0.12em; display: inline-block; }
         .placeholder-text { color: var(--text-muted); font-size: 1rem; }
         .status-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .status-item { display: flex; align-items: center; gap: 5px; padding: 8px 15px; background: var(--bg-card); border-radius: 20px; font-size: 0.85rem; }
@@ -80,10 +83,21 @@
         .btn-danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
         .btn-info { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; }
         .btn:active { transform: scale(0.95); }
-        .tabs { display: flex; gap: 5px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { padding: 8px 12px; border: none; border-radius: 10px; background: #2d3436; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
-        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .keyboard-section { background: var(--bg-card); border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 14px; overflow-x: auto; overflow-y: hidden; padding: 6px 4px 10px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; cursor: grab; user-select: none; }
+        .tabs.dragging { cursor: grabbing; scroll-behavior: auto; }
+        .tabs.dragging .tab-btn { pointer-events: none; }
+        .tabs::-webkit-scrollbar { height: 6px; }
+        .tabs::-webkit-scrollbar-track { background: rgba(45,52,54,0.5); border-radius: 3px; }
+        .tabs::-webkit-scrollbar-thumb { background: #2d3436; border-radius: 3px; }
+        .tab-btn { padding: 14px 22px; border: 2px solid #2d3436; border-radius: 14px; background: #1e2228; color: var(--text-muted); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        @media (max-width: 500px) {
+            .tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; overflow: visible; cursor: default; }
+            .tabs.dragging { cursor: default; }
+            .tab-btn { padding: 12px 14px; font-size: 1.15rem; }
+        }
+        .tab-btn:hover { color: var(--text-light); background: #2d3436; border-color: #3d4548; }
+        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: rgba(255,255,255,0.3); box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4); }
+        .keyboard-section { background: var(--bg-card); border-radius: 20px; padding: 15px; margin-bottom: 15px; -webkit-user-select: none; user-select: none; }
         .keyboard-title { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .element-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
         .element-grid.hidden { display: none; }
@@ -93,16 +107,18 @@
         .element-btn .atomic-num { font-size: 0.55rem; opacity: 0.9; color: #000; }
         .element-btn .symbol { font-size: 1.1rem; color: #000; }
         .el-C{background:var(--accent-c)}.el-H{background:var(--accent-h)}.el-O{background:var(--accent-o)}.el-N{background:var(--accent-n)}.el-S{background:var(--accent-s)}.el-Na{background:var(--accent-na)}.el-K{background:var(--accent-k)}.el-Mn{background:var(--accent-mn)}.el-Cr{background:var(--accent-cr)}.el-Fe{background:var(--accent-fe)}.el-Cu{background:var(--accent-cu)}.el-Zn{background:var(--accent-zn)}.el-Cl{background:var(--accent-cl)}.el-Br{background:var(--accent-br)}.el-I{background:var(--accent-i)}.el-Hg{background:var(--accent-hg)}.el-Pb{background:var(--accent-pb)}.el-Co{background:var(--accent-co)}.el-As{background:var(--accent-as)}.el-Bi{background:#fd79a8}.el-Ca{background:var(--accent-ca)}.el-Mg{background:var(--accent-mg)}.el-Al{background:var(--accent-al)}.el-P{background:var(--accent-p)}.el-Ag{background:var(--accent-ag)}.el-Ba{background:var(--accent-ba)}.el-Si{background:#a0a0a0}.el-Ti{background:#74b9ff}.el-Ni{background:#55a3ff}.el-Sn{background:#b2bec3}
-        .ops-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
-        .op-btn { padding: 15px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; background: #353b48; color: white; }
+        .ops-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 50px; gap: 8px; margin-top: 10px; }
+        .op-btn { padding: 0; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; background: #353b48; color: white; display: flex; align-items: center; justify-content: center; }
         .op-btn:active { transform: scale(0.95); }
         .op-btn.arrow-btn { background: var(--accent-arrow); grid-column: span 2; }
         .op-btn.plus-btn { background: var(--accent-plus); }
         .op-btn.num-btn { background: #487eb0; }
-        .op-btn.charge-btn { background: #8e44ad; }
+        .op-btn.charge-btn { background: #8e44ad; font-size: 1.3rem; }
         .op-btn.paren-btn { background: #16a085; }
         .op-btn.clear-btn { background: #c0392b; }
         .op-btn.back-btn { background: #d35400; }
+        .op-stack { display: flex; flex-direction: column; gap: 6px; grid-row: span 2; }
+        .op-stack .op-btn { flex: 1; min-height: 0; }
         .examples-section { background: var(--bg-card); border-radius: 20px; padding: 15px; }
         .examples-title { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px; }
         .examples-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -111,23 +127,28 @@
         .balancing-animation { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 1000; }
         .balancing-animation.active { display: flex; }
         .scale-left, .scale-right { position: absolute; width: 14px; height: 14px; border-radius: 50%; top: 42%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; animation: balance 1s ease-in-out infinite; }
-        .scale-left { left: 32%; background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        .scale-right { right: 32%; background: linear-gradient(135deg, #3498db, #2980b9); animation-delay: 0.5s; }
+        .scale-left { left: 30%; background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .scale-right { right: 30%; background: linear-gradient(135deg, #3498db, #2980b9); animation-delay: 0.5s; }
         @keyframes balance { 0%, 100% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.1); } }
         .balance-text { margin-top: 30px; font-size: 1.5rem; color: #2ecc71; animation: fadeInOut 1s infinite; }
         @keyframes fadeInOut { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .result-section { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 20px; padding: 20px; margin-top: 15px; display: none; }
+        .result-section { background: var(--bg-card); border-radius: 20px; padding: 20px; margin-top: 15px; margin-bottom: 15px; display: none; border: 1px solid rgba(46, 204, 113, 0.5); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
         .result-section.show { display: block; animation: slideUp 0.5s ease; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .result-title { text-align: center; color: #fff; font-size: 1.1rem; margin-bottom: 15px; }
         .result-equation { background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; font-size: 1.2rem; text-align: center; line-height: 2; }
         .result-equation .coef { color: #2ecc71; font-weight: bold; font-size: 1.3em; }
         .result-equation .arrow { color: #e74c3c; margin: 0 2px; font-weight: bold; font-size: 1.6em; }
+        .result-font-controls { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .result-font-btn { width: 44px; height: 44px; border: none; border-radius: 12px; background: #2d3436; color: var(--text-light); font-size: 1.25rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+        .result-font-btn:hover { background: #3d4548; }
+        .result-font-btn:active { transform: scale(0.95); }
         .copy-btn { display: block; margin: 15px auto 0; padding: 10px 20px; border: none; border-radius: 10px; background: rgba(255,255,255,0.2); color: white; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; }
         .copy-btn:hover { background: rgba(255,255,255,0.3); }
         .color-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #2d3436; }
         .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+        .credits { text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 12px; margin-bottom: 20px; }
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #2d3436; color: white; padding: 15px 25px; border-radius: 10px; font-size: 0.9rem; opacity: 0; transition: all 0.3s ease; z-index: 1001; }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .toast.error { background: #c0392b; }
@@ -139,14 +160,23 @@
         .history-item { padding: 10px; border-bottom: 1px solid #2d3436; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
         .history-item:hover { background: rgba(102, 126, 234, 0.1); }
         .history-item:last-child { border-bottom: none; }
-        @media (max-width: 380px) { .element-grid { grid-template-columns: repeat(4, 1fr); } .equation-text { font-size: 1.1rem; } .examples-grid { grid-template-columns: 1fr; } }
+        .confirm-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1002; padding: 20px; }
+        .confirm-modal.show { display: flex; }
+        .confirm-modal-box { background: var(--bg-card); border-radius: 20px; padding: 24px; max-width: 320px; width: 100%; border: 2px solid #2d3436; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .confirm-modal-title { color: var(--text-light); font-size: 1.1rem; font-weight: bold; margin-bottom: 12px; text-align: center; }
+        .confirm-modal-text { color: var(--text-muted); font-size: 0.95rem; text-align: center; margin-bottom: 20px; line-height: 1.5; }
+        .confirm-modal-actions { display: flex; gap: 12px; justify-content: center; }
+        .confirm-modal-btn { padding: 12px 24px; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
+        .confirm-modal-btn.cancel { background: #2d3436; color: var(--text-light); }
+        .confirm-modal-btn.confirm { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
+        .confirm-modal-btn:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
 <div class="container">
     <header class="header">
         <div class="logo">
-            <div class="logo-text">Balança Química</div>
+            <div class="logo-text"><span class="logo-emoji">⚖️</span><span class="logo-gradient">Balança Química</span><span class="logo-emoji">🧪</span></div>
         </div>
     </header>
     <div class="status-bar">
@@ -163,11 +193,15 @@
     </div>
     <div class="action-buttons">
         <button class="btn btn-success" onclick="balanceEquation()">⚖️ Balancear</button>
-        <button class="btn btn-danger" onclick="clearEquation()">🗑️ Limpar</button>
         <button class="btn btn-info" onclick="toggleHistory()">📜 Histórico</button>
+        <button class="btn btn-danger" onclick="showClearConfirm()">🗑️ Limpar</button>
     </div>
     <div class="result-section" id="resultSection">
         <div class="result-title">✅ Equação Balanceada!</div>
+        <div class="result-font-controls">
+            <button class="result-font-btn" onclick="changeResultFontSize(-1)" title="Diminuir fonte" aria-label="Diminuir fonte">A−</button>
+            <button class="result-font-btn" onclick="changeResultFontSize(1)" title="Aumentar fonte" aria-label="Aumentar fonte">A+</button>
+        </div>
         <div class="result-equation" id="resultEquation"></div>
         <button class="copy-btn" onclick="copyResult()">📋 Copiar Resultado</button>
     </div>
@@ -250,10 +284,12 @@
             <button class="op-btn charge-btn" onclick="addSuperscript('⁶')">⁶</button>
             <button class="op-btn charge-btn" onclick="addCharge('⁺')">⁺</button>
             <button class="op-btn charge-btn" onclick="addCharge('⁻')">⁻</button>
+            <div class="op-stack">
+                <button class="op-btn back-btn" onclick="backspace()">⌫</button>
+                <button class="op-btn clear-btn" onclick="showClearConfirm()">✕</button>
+            </div>
             <button class="op-btn paren-btn" onclick="addParen('(')">(</button>
             <button class="op-btn paren-btn" onclick="addParen(')')">)</button>
-            <button class="op-btn back-btn" onclick="backspace()">⌫</button>
-            <button class="op-btn clear-btn" onclick="clearEquation()">✕</button>
         </div>
     </div>
     <div class="examples-section">
@@ -283,6 +319,7 @@
         <div class="legend-item"><div class="legend-dot" style="background:var(--accent-fe)"></div>Fe</div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cl)"></div>Cl</div>
     </div>
+    <div class="credits">S(i)S — Química Turma S2N</div>
 </div>
 
 <div class="balancing-animation" id="balancingAnimation">
@@ -293,6 +330,16 @@
     </div>
     <div class="balance-text">Balanceando...</div>
 </div>
+<div class="confirm-modal" id="clearConfirmModal" onclick="if(event.target===this) cancelClearConfirm()">
+    <div class="confirm-modal-box" onclick="event.stopPropagation()">
+        <div class="confirm-modal-title">Excluir equação?</div>
+        <div class="confirm-modal-text">A equação atual será apagada. Deseja continuar?</div>
+        <div class="confirm-modal-actions">
+            <button class="confirm-modal-btn cancel" onclick="cancelClearConfirm()">Cancelar</button>
+            <button class="confirm-modal-btn confirm" onclick="confirmClearEquation()">Excluir</button>
+        </div>
+    </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -301,6 +348,10 @@
     let history = [];
     try { history = JSON.parse(localStorage.getItem('equationHistory') || '[]'); } catch(e) { history = []; }
     let lastBalancedResult = '';
+    let resultEquationFontRem = 1.3;
+    const RESULT_FONT_MIN = 0.9;
+    const RESULT_FONT_MAX = 2.5;
+    const RESULT_FONT_STEP = 0.2;
 
     const twoLetterElements = ['Na','Mg','Al','Si','Cl','Ca','Ti','Cr','Mn','Fe','Co','Ni','Cu','Zn','As','Br','Ag','Sn','Ba','Hg','Pb','Bi'];
     const oneLetterElements = ['H','C','N','O','P','S','K','I'];
@@ -611,7 +662,16 @@
         updateDisplay(); vibrate();
     }
 
-    function clearEquation() {
+    function showClearConfirm() {
+        document.getElementById('clearConfirmModal').classList.add('show');
+    }
+
+    function cancelClearConfirm() {
+        document.getElementById('clearConfirmModal').classList.remove('show');
+    }
+
+    function confirmClearEquation() {
+        document.getElementById('clearConfirmModal').classList.remove('show');
         equation = ''; isBalanced = false; lastBalancedResult = '';
         updateDisplay();
         document.getElementById('resultSection').classList.remove('show');
@@ -628,16 +688,20 @@
 
     function vibrate() { if (navigator.vibrate) navigator.vibrate(30); }
 
-    function adjustEquationFontSize() {
+    const FIXED_EQUATION_FONT_REM = 2.2;
+    let prevEquationLength = 0;
+
+    function adjustEquationFontSize(scrollToEnd) {
         const inner = document.getElementById('equationDisplayInner');
         const eqText = document.getElementById('equationText');
-        if (!inner || !eqText || !eqText.textContent.trim()) { eqText.style.fontSize=''; return; }
-        let rem = 1.4;
-        eqText.style.fontSize = rem + 'rem';
-        const maxW = inner.clientWidth - 6;
-        while (rem > 1.05 && eqText.scrollWidth > maxW) {
-            rem = Math.max(1.05, rem - 0.1);
-            eqText.style.fontSize = rem + 'rem';
+        if (!inner || !eqText) return;
+        if (!eqText.textContent.trim()) { eqText.style.fontSize = ''; inner.scrollLeft = 0; return; }
+        eqText.style.fontSize = FIXED_EQUATION_FONT_REM + 'rem';
+        const maxScrollLeft = Math.max(0, inner.scrollWidth - inner.clientWidth);
+        if (scrollToEnd) {
+            inner.scrollLeft = maxScrollLeft;
+        } else {
+            inner.scrollLeft = Math.min(inner.scrollLeft, maxScrollLeft);
         }
     }
 
@@ -702,10 +766,15 @@
             placeholder.style.display = 'block';
             eqText.innerHTML = '';
             eqText.style.fontSize = '';
+            const inner = document.getElementById('equationDisplayInner');
+            if (inner) inner.scrollLeft = 0;
+            prevEquationLength = 0;
         } else {
             placeholder.style.display = 'none';
             eqText.innerHTML = formatEquation(equation);
-            requestAnimationFrame(adjustEquationFontSize);
+            const scrollToEnd = equation.length > prevEquationLength;
+            prevEquationLength = equation.length;
+            requestAnimationFrame(() => adjustEquationFontSize(scrollToEnd));
         }
     }
 
@@ -766,8 +835,16 @@
             html += formatCompound(compound); text += compound;
         });
         lastBalancedResult = text;
-        document.getElementById('resultEquation').innerHTML = html;
+        const resultEl = document.getElementById('resultEquation');
+        resultEl.innerHTML = html;
+        resultEl.style.fontSize = resultEquationFontRem + 'rem';
         document.getElementById('resultSection').classList.add('show');
+    }
+
+    function changeResultFontSize(delta) {
+        resultEquationFontRem = Math.max(RESULT_FONT_MIN, Math.min(RESULT_FONT_MAX, resultEquationFontRem + delta * RESULT_FONT_STEP));
+        const resultEl = document.getElementById('resultEquation');
+        if (resultEl) resultEl.style.fontSize = resultEquationFontRem + 'rem';
     }
 
     function saveToHistory(eq) {
@@ -811,23 +888,74 @@
 
     function initDrag() {
         const inner = document.getElementById('equationDisplayInner');
-        let dragging = false, startX, startY, scrollLeft, scrollTop;
-        const getPos = e => e.touches ? {x: e.touches[0].clientX, y: e.touches[0].clientY} : {x: e.clientX, y: e.clientY};
-        inner.addEventListener('mousedown', e => { dragging=true; inner.classList.add('dragging'); const p=getPos(e); startX=p.x; startY=p.y; scrollLeft=inner.scrollLeft; scrollTop=inner.scrollTop; e.preventDefault(); });
-        inner.addEventListener('touchstart', e => { dragging=true; inner.classList.add('dragging'); const p=getPos(e); startX=p.x; startY=p.y; scrollLeft=inner.scrollLeft; scrollTop=inner.scrollTop; }, {passive:true});
-        const move = e => { if (!dragging) return; const p=getPos(e); inner.scrollLeft=Math.max(0,scrollLeft+(p.x-startX)); inner.scrollTop=Math.max(0,scrollTop+(p.y-startY)); };
-        const end  = () => { dragging=false; inner.classList.remove('dragging'); };
-        window.addEventListener('mousemove', move);
-        window.addEventListener('touchmove', move, {passive:true});
-        window.addEventListener('mouseup', end);
-        window.addEventListener('touchend', end);
-        window.addEventListener('touchcancel', end);
+        if (!inner) return;
+        let dragging = false, startX, scrollLeft;
+        const getPos = e => e.touches ? { x: e.touches[0].clientX } : { x: e.clientX };
+        const onStart = (e) => {
+            const p = getPos(e);
+            startX = p.x;
+            scrollLeft = inner.scrollLeft;
+            dragging = true;
+            inner.classList.add('dragging');
+            e.preventDefault();
+        };
+        const onMove = (e) => {
+            if (!dragging) return;
+            e.preventDefault();
+            const p = getPos(e);
+            const maxScrollLeft = Math.max(0, inner.scrollWidth - inner.clientWidth);
+            inner.scrollLeft = Math.max(0, Math.min(maxScrollLeft, scrollLeft + (p.x - startX)));
+        };
+        const onEnd = () => {
+            dragging = false;
+            inner.classList.remove('dragging');
+        };
+        inner.addEventListener('mousedown', onStart);
+        inner.addEventListener('touchstart', onStart, { passive: false });
+        window.addEventListener('mousemove', (e) => { if (dragging) onMove(e); });
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('mouseup', onEnd);
+        window.addEventListener('touchend', onEnd);
+        window.addEventListener('touchcancel', onEnd);
+    }
+
+    function initTabsDrag() {
+        const tabs = document.querySelector('.tabs');
+        if (!tabs) return;
+        let dragging = false, startX, scrollLeft;
+        const getPos = e => e.touches ? e.touches[0].clientX : e.clientX;
+        const onStart = (e) => {
+            if (e.target.closest('.tab-btn')) return;
+            dragging = true;
+            tabs.classList.add('dragging');
+            startX = getPos(e);
+            scrollLeft = tabs.scrollLeft;
+            e.preventDefault();
+        };
+        const onMove = (e) => {
+            if (!dragging) return;
+            const x = getPos(e);
+            const maxScroll = tabs.scrollWidth - tabs.clientWidth;
+            tabs.scrollLeft = Math.max(0, Math.min(maxScroll, scrollLeft + (x - startX)));
+        };
+        const onEnd = () => {
+            dragging = false;
+            tabs.classList.remove('dragging');
+        };
+        tabs.addEventListener('mousedown', onStart);
+        tabs.addEventListener('touchstart', onStart, { passive: true });
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, { passive: true });
+        window.addEventListener('mouseup', onEnd);
+        window.addEventListener('touchend', onEnd);
+        window.addEventListener('touchcancel', onEnd);
     }
 
     updateDisplay();
     updateHistoryDisplay();
     initDrag();
-    window.addEventListener('resize', () => requestAnimationFrame(adjustEquationFontSize));
+    initTabsDrag();
+    window.addEventListener('resize', () => requestAnimationFrame(() => adjustEquationFontSize(false)));
 </script>
 </body>
 </html>
