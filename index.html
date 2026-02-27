@@ -67,8 +67,11 @@
         .equation-text .element-Sn { color: #b2bec3; }
         .equation-text .arrow { color: var(--accent-arrow); margin: 0 8px; font-size: 1.3em; }
         .equation-text .plus { color: var(--accent-plus); margin: 0 2px; }
-        .equation-text .charge { color: #f39c12; font-size: 0.8em; vertical-align: 0em; }
+        .equation-text .charge { color: #f39c12; font-size: 0.8em; vertical-align: 0em; margin-left: -0.5em; }
         .equation-text .charge sup { font-size: 1.2em; margin-top: -0.12em; display: inline-block; }
+        .equation-text .state-sub { font-size: 0.75em; color: var(--text-light); vertical-align: sub; margin-left: -0.12em; }
+        .equation-text .charge + .state-sub { margin-left: -0.45em; }
+        .equation-text .state-sub sub { font-size: 0.55em; vertical-align: sub; }
         .placeholder-text { color: var(--text-muted); font-size: 1rem; }
         .status-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .status-item { display: flex; align-items: center; gap: 5px; padding: 8px 15px; background: var(--bg-card); border-radius: 20px; font-size: 0.85rem; }
@@ -115,6 +118,7 @@
         .op-btn.num-btn { background: #487eb0; }
         .op-btn.charge-btn { background: #8e44ad; font-size: 1.3rem; }
         .op-btn.paren-btn { background: #16a085; }
+        .op-btn.state-btn { background: #0d7377; font-size: 0.85rem; }
         .op-btn.clear-btn { background: #c0392b; }
         .op-btn.back-btn { background: #d35400; }
         .op-stack { display: flex; flex-direction: column; gap: 6px; grid-row: span 2; }
@@ -139,6 +143,10 @@
         .result-equation { background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; font-size: 1.2rem; text-align: center; line-height: 2; }
         .result-equation .coef { color: #2ecc71; font-weight: bold; font-size: 1.3em; }
         .result-equation .arrow { color: #e74c3c; margin: 0 2px; font-weight: bold; font-size: 1.6em; }
+        .result-equation .charge { margin-left: -0.18em; }
+        .result-equation .state-sub { font-size: 0.75em; color: rgba(255,255,255,0.95); vertical-align: sub; margin-left: 0.06em; }
+        .result-equation .charge + .state-sub { margin-left: -0.45em; }
+        .result-equation .state-sub sub { font-size: 1em; vertical-align: sub; }
         .result-font-controls { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 12px; }
         .result-font-btn { width: 44px; height: 44px; border: none; border-radius: 12px; background: #2d3436; color: var(--text-light); font-size: 1.25rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
         .result-font-btn:hover { background: #3d4548; }
@@ -290,6 +298,10 @@
             </div>
             <button class="op-btn paren-btn" onclick="addParen('(')">(</button>
             <button class="op-btn paren-btn" onclick="addParen(')')">)</button>
+            <button class="op-btn state-btn" onclick="addState('aq')" title="Aquoso">(aq)</button>
+            <button class="op-btn state-btn" onclick="addState('gs')" title="Gasoso">(gs)</button>
+            <button class="op-btn state-btn" onclick="addState('s')" title="Sólido">(s)</button>
+            <button class="op-btn state-btn" onclick="addState('liq')" title="Líquido">(liq)</button>
         </div>
     </div>
     <div class="examples-section">
@@ -462,8 +474,8 @@
         const originalLeft  = split(sides[0]);
         const originalRight = split(sides[1]);
         if (!originalLeft.length || !originalRight.length) return null;
-        // Versão limpa (sem cargas iônicas) para contagem de átomos
-        const clean = s => s.replace(/[⁺⁻¹²³⁴⁵⁶⁷⁸⁹]/g, '');
+        // Versão limpa (sem cargas e sem estado físico) para contagem de átomos
+        const clean = s => s.replace(/[⁺⁻¹²³⁴⁵⁶⁷⁸⁹]/g, '').replace(/\(aq\)|\(gs\)|\(s\)|\(liq\)/gi, '');
         const left  = originalLeft.map(clean);
         const right = originalRight.map(clean);
         return { left, right, originalLeft, originalRight };
@@ -651,6 +663,7 @@
     function addCharge(c)  { equation += c; updateDisplay(); vibrate(); }
     function addSuperscript(s) { equation += s; updateDisplay(); vibrate(); }
     function addParen(p)   { equation += p; updateDisplay(); vibrate(); }
+    function addState(state) { equation += '(' + state + ')'; updateDisplay(); vibrate(); }
 
     function backspace() {
         if (!equation.length) return;
@@ -707,6 +720,76 @@
 
     const superscriptChars = new Set(['¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹','⁺','⁻']);
 
+    function getBaseFormula(compound) {
+        const noCharge = compound.replace(/[⁺⁻¹²³⁴⁵⁶⁷⁸⁹]/g, '').replace(/\(aq\)|\(gs\)|\(s\)|\(liq\)/gi, '').trim();
+        return normalizeFormula(noCharge);
+    }
+    function hasState(compound) {
+        return /\((aq|gs|s|liq)\)$/i.test(compound.trim());
+    }
+    const stateGas = new Set([
+        'O2','N2','H2','F2','Cl2','CO2','CO','NO','NO2','N2O','N2O4','N2O5','SO2','SO3','NH3','CH4','O3','H2S',
+        'C2H4','C2H6','C3H8','C4H10','C2H2','HCl','HBr','HI','HF','HCN','PH3','SiH4','ClO2','O2','F2'
+    ]);
+    const stateLiquid = new Set([
+        'H2O','Br2','Hg','H2O2','C2H5OH','CH3OH','C3H7OH','C4H9OH','C6H6','C6H14',
+        'CH3COOH','CCl4','CS2','C2H5OC2H5','C10H8'
+    ]);
+    const stateAqueous = new Set([
+        'HCl','H2SO4','HNO3','HBr','HI','HClO4','H3PO4','H2CO3','HClO3','HF','H2S','H2SO3','HNO2','H3BO3','H2C2O4',
+        'NaOH','KOH','Ca(OH)2','Ba(OH)2','NH4OH','LiOH','Sr(OH)2','RbOH','CsOH','Mg(OH)2','Al(OH)3','Zn(OH)2','Fe(OH)2','Fe(OH)3','Cu(OH)2','Pb(OH)2',
+        'NaCl','KCl','LiCl','RbCl','CsCl','NaNO3','KNO3','LiNO3','CaCl2','MgCl2','SrCl2','BaCl2','Na2SO4','K2SO4','Li2SO4','MgSO4','Ca(NO3)2','Sr(NO3)2','Ba(NO3)2',
+        'Na2CO3','K2CO3','Li2CO3','NaHCO3','KHCO3','Na3PO4','K3PO4','Na2HPO4','NaH2PO4','K2HPO4','KH2PO4',
+        'CuSO4','Cu(NO3)2','CuCl2','FeSO4','Fe(NO3)2','Fe(NO3)3','FeCl2','FeCl3','Fe2(SO4)3','ZnSO4','ZnCl2','Zn(NO3)2',
+        'AgNO3','AgClO4','Pb(NO3)2','Pb(CH3COO)2','MnSO4','MnCl2','Mn(NO3)2','Cr2(SO4)3','Cr(NO3)3','CrCl3','NiSO4','NiCl2','Ni(NO3)2','CoCl2','CoSO4','Co(NO3)2',
+        '(NH4)2SO4','NH4Cl','NH4NO3','NH4Br','NH4I','NH4OH','NH4HCO3','(NH4)2CO3','NH4H2PO4','(NH4)2HPO4',
+        'AlCl3','Al(NO3)3','Al2(SO4)3','NaBr','KBr','NaI','KI','NaF','KF','CH3COONa','CH3COOK','CH3COONH4',
+        'K2CrO4','K2Cr2O7','Na2CrO4','Na2Cr2O7','KMnO4','NaMnO4','NaClO','NaClO3','KClO3','KClO4','NaBrO3','KBrO3',
+        'Cr2O7','MnO4','NO3','SO4','CO3','PO4','OH','NH4','ClO4','ClO3','CrO4','C2O4','CH3COO','HCO3','HSO4','H2PO4','HPO4','PO4','SO3','NO2','HS','S2','CN','SCN'
+    ]);
+    const stateSolidMetals = new Set(['Fe','Cu','Zn','Na','K','Ca','Mg','Al','Ag','Pb','Sn','Cr','Mn','Ni','Ba','Co','Ti','Au','Pt','Bi','Li','Rb','Cs','Sr','Hg','Cd','W','Mo','V','Zr']);
+    const stateSolidCompounds = new Set([
+        'C','S','P','I2','Si','P4','B','Se','Te','As','Sb','Ge',
+        'Fe2O3','Fe3O4','FeO','CuO','Cu2O','CuS','Cu2S','CaO','MgO','Al2O3','ZnO','Na2O','K2O','MnO2','MnO','Mn2O3','Mn3O4','PbO2','PbO','Cr2O3','TiO2','V2O5','WO3','MoO3','Ag2O','HgO','NiO','CoO','BaO','SrO','CdO','SnO','SnO2','Bi2O3',
+        'CaCO3','MgCO3','BaCO3','SrCO3','Li2CO3','Na2CO3','K2CO3','FeCO3','ZnCO3','CuCO3','PbCO3','MnCO3','CoCO3','NiCO3','Ag2CO3','CdCO3','(NH4)2CO3',
+        'SiO2','P2O5','P2O3','SO3','CO2','N2O5','Cl2O7','B2O3','As2O3','Sb2O3','SeO2','TeO2',
+        'Fe(OH)3','Cu(OH)2','Zn(OH)2','Al(OH)3','Mg(OH)2','Fe(OH)2','Pb(OH)2','Ni(OH)2','Co(OH)2','Mn(OH)2','Cd(OH)2','Cr(OH)3','Sn(OH)2','Ba(OH)2','Ca(OH)2','Sr(OH)2',
+        'AgCl','AgBr','AgI','Ag2S','Ag2CO3','Ag2O','Ag2CrO4','PbCl2','PbBr2','PbI2','PbSO4','PbS','PbCO3','PbO','BaSO4','CaSO4','SrSO4','PbSO4','CaSO4','BaCO3','SrCO3',
+        'Na2O2','K2O2','KMnO4','K2Cr2O7','Na2Cr2O7','K2CrO4','Na2CrO4','KClO3','KClO4','NaClO3','BaSO4','CaSO4','SrSO4','BaCrO4','PbCrO4','SrCrO4',
+        'FeS','ZnS','HgS','Ag2S','CuS','Cu2S','CdS','MnS','NiS','CoS','PbS','SnS','Sb2S3','As2S3','Bi2S3',
+        'CaC2','Al4C3','SiC','Mg2C3','Na2CO3','K2CO3','(NH4)2C2O4','Na2C2O4','K2C2O4','CaC2O4','MgC2O4','FeC2O4','ZnC2O4','CuC2O4',
+        'Ca3(PO4)2','CaHPO4','Ca(H2PO4)2','Mg3(PO4)2','FePO4','AlPO4','Zn3(PO4)2','Cu3(PO4)2','Ag3PO4','Ba3(PO4)2','Sr3(PO4)2',
+        'K4Fe(CN)6','K3Fe(CN)6','Na4Fe(CN)6','Fe4(Fe(CN)6)3','Cu2Fe(CN)6','Zn2Fe(CN)6','Ag4Fe(CN)6','Ca2Fe(CN)6'
+    ]);
+    function getDefaultState(compound) {
+        const base = getBaseFormula(compound);
+        if (!base) return '';
+        if (/[⁺⁻]/.test(compound)) return '(aq)';
+        if (stateGas.has(base)) return '(gs)';
+        if (stateLiquid.has(base)) return '(liq)';
+        if (stateAqueous.has(base)) return '(aq)';
+        if (stateSolidCompounds.has(base)) return '(s)';
+        if (stateSolidMetals.has(base)) return '(s)';
+        if (/^[CNOSPI](\d*)$/.test(base) || /^[A-Z][a-z]?\d*$/.test(base)) return '(s)';
+        return '(s)';
+    }
+    function ensureCompoundState(compound) {
+        if (hasState(compound)) return compound;
+        const state = getDefaultState(compound);
+        return state ? compound + state : compound;
+    }
+    function insertDefaultStatesInEquation(equation) {
+        if (!equation || !equation.includes('→')) return equation;
+        const sides = equation.split('→');
+        const processSide = (s) => s.split('+').map(c => ensureCompoundState(c.trim())).join('+');
+        return processSide(sides[0]) + '→' + processSide(sides[1]);
+    }
+
+    function moveStateBeforeCharge(str) {
+        if (!str || typeof str !== 'string') return str;
+        return str.replace(/([¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+)(\((?:aq|gs|s|liq)\))/gi, '$2$1');
+    }
+
     function formatEquation(eq) {
         let out = '', i = 0;
         while (i < eq.length) {
@@ -720,6 +803,10 @@
                 out += `<span class="arrow">→</span>`; i++;
             } else if (one === '+') {
                 out += `<span class="plus">+</span>`; i++;
+            } else if (one === '(' && /^(aq|liq|gs|s)\)/i.test(eq.substring(i + 1, i + 6))) {
+                const m = eq.substring(i + 1).match(/^(aq|liq|gs|s)\)/i);
+                if (m) { out += `<span class="state-sub"><sub>(${m[1].toLowerCase()})</sub></span>`; i += 1 + m[0].length; }
+                else { out += one; i++; }
             } else if (/[0-9]/.test(one)) {
                 let num = '';
                 while (i < eq.length && /[0-9]/.test(eq[i])) { num += eq[i]; i++; }
@@ -744,6 +831,10 @@
                 out += `<span class="${elementColors[two]}">${two}</span>`; i += 2;
             } else if (oneLetterElements.includes(one) && elementColors[one]) {
                 out += `<span class="${elementColors[one]}">${one}</span>`; i++;
+            } else if (one === '(' && /^(aq|liq|gs|s)\)/i.test(compound.substring(i + 1, i + 6))) {
+                const m = compound.substring(i + 1).match(/^(aq|liq|gs|s)\)/i);
+                if (m) { out += `<span class="state-sub"><sub>(${m[1].toLowerCase()})</sub></span>`; i += 1 + m[0].length; }
+                else { out += one; i++; }
             } else if (/[0-9]/.test(one)) {
                 let num = '';
                 while (i < compound.length && /[0-9]/.test(compound[i])) { num += compound[i]; i++; }
@@ -771,7 +862,7 @@
             prevEquationLength = 0;
         } else {
             placeholder.style.display = 'none';
-            eqText.innerHTML = formatEquation(equation);
+            eqText.innerHTML = formatEquation(moveStateBeforeCharge(insertDefaultStatesInEquation(equation)));
             const scrollToEnd = equation.length > prevEquationLength;
             prevEquationLength = equation.length;
             requestAnimationFrame(() => adjustEquationFontSize(scrollToEnd));
@@ -824,15 +915,17 @@
         originalLeft.forEach((compound, i) => {
             if (i > 0) { html += '<span class="plus"> + </span>'; text += ' + '; }
             const c = coeffs[i];
+            const comp = moveStateBeforeCharge(ensureCompoundState(compound));
             if (c > 1) { html += `<span class="coef">${c}</span>`; text += c; }
-            html += formatCompound(compound); text += compound;
+            html += formatCompound(comp); text += comp;
         });
         html += '<span class="arrow"> → </span>'; text += ' → ';
         originalRight.forEach((compound, i) => {
             if (i > 0) { html += '<span class="plus"> + </span>'; text += ' + '; }
             const c = coeffs[left.length + i];
+            const comp = moveStateBeforeCharge(ensureCompoundState(compound));
             if (c > 1) { html += `<span class="coef">${c}</span>`; text += c; }
-            html += formatCompound(compound); text += compound;
+            html += formatCompound(comp); text += comp;
         });
         lastBalancedResult = text;
         const resultEl = document.getElementById('resultEquation');
